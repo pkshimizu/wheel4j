@@ -16,27 +16,27 @@ public class Case<T> {
     }
 
     public <R> CasePipeline<T, R> when(Object target, R result) {
-        return caseValue(target, v -> result);
+        return whenValue(target, v -> result);
     }
 
     public <R> CasePipeline<T, R> when(Object target, Function<T, R> function) {
-        return caseValue(target, function);
+        return whenValue(target, function);
     }
 
-    public <R> CasePipeline<T, R> caseValue(Object target, Function<T, R> function) {
+    public <R> CasePipeline<T, R> whenValue(Object target, Function<T, R> function) {
         return new CasePipeline<T, R>(value, v -> Objects.equals(v, target), function);
     }
 
     public <R> CasePipeline<T, R> when(Predicate<T> predicate, R result) {
         if (predicate == null) {
-            return caseValue(null, v -> result);
+            return whenValue(null, v -> result);
         }
         return new CasePipeline<T, R>(value, predicate, v -> result);
     }
 
     public <R> CasePipeline<T, R> when(Predicate<T> predicate, Function<T, R> function) {
         if (predicate == null) {
-            return caseValue(null, function);
+            return whenValue(null, function);
         }
         return new CasePipeline<T, R>(value, predicate, function);
     }
