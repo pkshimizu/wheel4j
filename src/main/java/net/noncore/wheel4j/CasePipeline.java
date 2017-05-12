@@ -1,70 +1,84 @@
 package net.noncore.wheel4j;
 
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-public class CasePipeline<T, R> {
+public class CasePipeline<T, R> implements Case<T> {
     private T value;
-    private Predicate<T> predicate;
-    private Function<T, R> function;
-    private CasePipeline<T, R> next;
-    private CasePipeline<T, R> head;
+    private Object result;
+    private boolean matched;
+    private boolean finished;
 
-    CasePipeline(T value, Predicate<T> predicate, Function<T, R> funcation) {
+    CasePipeline(T value) {
         this.value = value;
-        this.predicate = predicate;
-        this.function = funcation;
-        head = this;
     }
 
-    private CasePipeline(T value, Predicate<T> predicate, Function<T, R> funcation, CasePipeline<T, R> head) {
-        this.value = value;
-        this.predicate = predicate;
-        this.function = funcation;
-        this.head = head;
-    }
-
-    public CasePipeline<T, R> when(Object target, R result) {
-        next = new CasePipeline<T, R>(value, v -> Objects.equals(v, target), v -> result, head);
-        return next;
-    }
-
-    public CasePipeline<T, R> when(Object target, Function<T, R> function) {
-        next = new CasePipeline<T, R>(value, v -> Objects.equals(v, target), function, head);
-        return next;
-    }
-
-    public CasePipeline<T, R> when(Predicate<T> predicate, R result) {
-        next = new CasePipeline<T, R>(value, predicate, v -> result, head);
-        return next;
-    }
-
-    public CasePipeline<T, R> when(Predicate<T> predicate, Function<T, R> function) {
-        next = new CasePipeline<T, R>(value, predicate, function, head);
-        return next;
-    }
-
-    public CasePipeline<T, R> other(R result) {
-        next = new CasePipeline<T, R>(value, v -> true, v -> result, head);
-        return next;
-    }
-
-    public CasePipeline<T, R> other(Function<T, R> function) {
-        next = new CasePipeline<T, R>(value, v -> true, function, head);
-        return next;
-    }
-
-    public R end() {
-        return head.evaluate();
-    }
-
-    private R evaluate() {
-        if (predicate.test(value)) {
-            return function.apply(value);
-        } else if (next != null){
-            return next.evaluate();
+    @Override
+    public Case<T> whenNull() {
+        if (!finished) {
+            matched = value == null;
         }
-        return null;
+        return this;
+    }
+
+    @Override
+    public Case<T> when(T... targets) {
+        if (!finished) {
+            matched = Stream.of(targets)
+                    .anyMatch(v -> Objects.equals(v, value));
+        }
+        return this;
+    }
+
+    @Override
+    public Case<T> when(Predicate<T> predicate) {
+        if (!finished) {
+            matched = predicate.test(value);
+        }
+        return this;
+    }
+
+    @Override
+    public <R> Case<T> then(R result) {
+        if (!finished && matched) {
+            this.result = result;
+            finished = true;
+        }
+        return this;
+    }
+
+    @Override
+    public <R> Case<T> then(Function<T, R> function) {
+        if (!finished && matched) {
+            this.result = function.apply(value);
+            finished = true;
+        }
+        return this;
+    }
+
+    @Override
+    public Case<T> call(Consumer<T> consumer) {
+        if (!finished && matched) {
+            consumer.accept(value);
+            finished = true;
+        }
+        return this;
+    }
+
+    @Override
+    public Case<T> other() {
+        if (!finished) {
+            matched = true;
+        }
+        return this;
+    }
+
+    @Override
+    public <R> R end() {
+        return (R) result;
     }
 }

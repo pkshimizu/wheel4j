@@ -7,10 +7,10 @@ The Case class extends the switch statement.
 ```$java
 int val = 2;
 String text = Case.of(val)
-                .when(1, "one")
-                .when(2, "two")
-                .then(3, "thee")
-                .other("other")
+                .when(1).then("one")
+                .when(2).then("two")
+                .then(3).then("thee")
+                .other().then("other")
                 .end()
 ```
 
@@ -18,9 +18,9 @@ Expressions can be used as conditions.
 ```$java
 int val = 2;
 String text = Case.of(val)
-                .when(0, "Zero")
-                .when(v -> v % 2 == 0, "Even")
-                .when(v -> v % 2 == 1, "Odd")
+                .when(0).then("Zero")
+                .when(v -> v % 2 == 0).then("Even")
+                .when(v -> v % 2 == 1).then("Odd")
                 .end()
 ```
 
@@ -28,8 +28,18 @@ Like the switch statement, you can execute the expression when it matches the co
 ```$java
 String val = "hello wheel4j";
 int length = Case.of(val)
-                .when(null, 0)
-                .when(v -> v.isEmpty(), 0)
-                .other(v -> v.length())
+                .whenNull().then(0)
+                .when(v -> v.isEmpty()).then(0)
+                .other().then(v -> v.length())
                 .end()
+```
+
+You can call method when condition match.
+```$java
+String val = "hello wheel4j";
+Case.of(val)
+        .whenNull().call(v -> System.out.println("Null"))
+        .when(v -> v.isEmpty()).call(System.out.println("Empty"))
+        .other().call(v -> System.out.println("Length:" + v.length()))
+        .end()
 ```

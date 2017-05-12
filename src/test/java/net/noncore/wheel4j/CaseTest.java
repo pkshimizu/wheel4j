@@ -10,10 +10,10 @@ public class CaseTest {
     @Test
     public void testWhenConditionValueReturnValue() {
         String actual = Case.of(1)
-                .when(1, "one")
-                .when(2, "two")
-                .when(3, "three")
-                .other("other")
+                .when(1).then("one")
+                .when(2).then("two")
+                .when(3).then("three")
+                .other().then("other")
                 .end();
         assertThat(actual, is("one"));
     }
@@ -21,10 +21,10 @@ public class CaseTest {
     @Test
     public void testOtherReturnValue() {
         String actual = Case.of(4)
-                .when(1, "one")
-                .when(2, "two")
-                .when(3, "three")
-                .other("other")
+                .when(1).then("one")
+                .when(2).then("two")
+                .when(3).then("three")
+                .other().then("other")
                 .end();
         assertThat(actual, is("other"));
     }
@@ -32,8 +32,8 @@ public class CaseTest {
     @Test
     public void textWhenConditionExprReturnValue() {
         String actual = Case.of(1)
-                .when(v -> v % 2 == 0, "Even")
-                .when(v -> v % 2 == 1, "Odd")
+                .when(v -> v % 2 == 0).then("Even")
+                .when(v -> v % 2 == 1).then( "Odd")
                 .end();
         assertThat(actual, is("Odd"));
     }
@@ -42,9 +42,9 @@ public class CaseTest {
     public void textWhenConditionNullReturnValue() {
         Integer value = null;
         String actual = Case.of(value)
-                .when(null, "Null")
-                .when(v -> v % 2 == 1, "Odd")
-                .when(v -> v % 2 == 0, "Even")
+                .whenNull().then("Null")
+                .when(v -> v % 2 == 1).then("Odd")
+                .when(v -> v % 2 == 0).then("Even")
                 .end();
         assertThat(actual, is("Null"));
     }
@@ -52,10 +52,10 @@ public class CaseTest {
     @Test
     public void testWhenConditionValueReturnExpr() {
         int actual = Case.of(2)
-                .when(1, v -> v + 10)
-                .when(2, v -> v + 20)
-                .when(3, v -> v + 30)
-                .other(40)
+                .when(1).then(v -> v + 10)
+                .when(2).then(v -> v + 20)
+                .when(3).then(v -> v + 30)
+                .other().then(40)
                 .end();
         assertThat(actual, is(22));
     }
@@ -63,10 +63,10 @@ public class CaseTest {
     @Test
     public void testOtherReturnExpr() {
         int actual = Case.of(4)
-                .when(1, v -> v + 10)
-                .when(2, v -> v + 20)
-                .when(3, v -> v + 30)
-                .other(v -> v + 40)
+                .when(1).then(v -> v + 10)
+                .when(2).then(v -> v + 20)
+                .when(3).then(v -> v + 30)
+                .other().then(v -> v + 40)
                 .end();
         assertThat(actual, is(44));
     }
@@ -74,8 +74,8 @@ public class CaseTest {
     @Test
     public void textWhenConditionExprReturnExpr() {
         int actual = Case.of(3)
-                .when(v -> v % 2 == 0, v -> v / 2)
-                .when(v -> v % 2 == 1, v -> (v + 1) / 2)
+                .when(v -> v % 2 == 0).then(v -> v / 2)
+                .when(v -> v % 2 == 1).then(v -> (v + 1) / 2)
                 .end();
         assertThat(actual, is(2));
     }
@@ -84,19 +84,66 @@ public class CaseTest {
     public void textWhenConditionNullReturnExpr() {
         Integer value = null;
         int actual = Case.of(value)
-                .when(null, v -> 10 * 5)
-                .when(v -> v % 2 == 0, v -> v / 2)
-                .when(v -> v % 2 == 1, v -> (v + 1) / 2)
+                .whenNull().then(v -> 10 * 5)
+                .when(v -> v % 2 == 0).then(v -> v / 2)
+                .when(v -> v % 2 == 1).then(v -> (v + 1) / 2)
                 .end();
         assertThat(actual, is(50));
     }
 
     @Test
+    public void testWhenConditionValueReturnVoid() {
+        Case.of(2)
+                .when(1).call(v -> assertThat(v, is(2)))
+                .when(2).call(v -> assertThat(v, is(2)))
+                .when(3).call(v -> assertThat(v, is(2)))
+                .other().call(v -> assertThat(v, is(2)))
+                .end();
+    }
+
+    @Test
+    public void testOtherReturnVoid() {
+        Case.of(2)
+                .when(1).call(v -> assertThat(v, is(2)))
+                .when(2).call(v -> assertThat(v, is(2)))
+                .when(3).call(v -> assertThat(v, is(2)))
+                .other().call(v -> assertThat(v, is(2)))
+                .end();
+    }
+
+    @Test
+    public void textWhenConditionExprReturnVoid() {
+        Case.of(3)
+                .when(v -> v % 2 == 0).call(v -> assertThat(v, is(3)))
+                .when(v -> v % 2 == 1).call(v -> assertThat(v, is(3)))
+                .end();
+    }
+
+    @Test
+    public void textWhenConditionNullReturnVoid() {
+        Integer value = null;
+        Case.of(value)
+                .whenNull().call(v -> assertNull(v))
+                .when(v -> v % 2 == 0).call(v -> assertNull(v))
+                .when(v -> v % 2 == 1).call(v -> assertNull(v))
+                .end();
+    }
+
+    @Test
+    public void textWhenMultiCondition() {
+        String actual = Case.of(1)
+                .when(1, 2).then("One or Two")
+                .when(3).then("Three")
+                .end();
+        assertThat(actual, is("One or Two"));
+    }
+
+    @Test
     public void testSample() {
         int actual = Case.of("hello world")
-                .when(null, 0)
-                .when(v -> v.isEmpty(), 0)
-                .other(v -> v.length())
+                .whenNull().then(0)
+                .when(v -> v.isEmpty()).then(0)
+                .other().then(v -> v.length())
                 .end();
         assertThat(actual, is(11));
     }
