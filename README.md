@@ -43,3 +43,33 @@ Case.of(val)
         .other().call(v -> System.out.println("Length:" + v.length()))
         .end()
 ```
+
+## Evaluations
+`equals` method evaluate two objects.
+
+It's compare internal states even for class that do no have `equals` method.
+
+```$java
+class SuperClass {
+    private final int value1;
+
+    SuperClass(int value1) {
+        this.value1 = value1;
+    }
+    
+}
+
+class SubClass extends SuperClass {
+    private final Long value2;
+
+    SubClass(int value1, Long value2) {
+        super(value1);
+        this.value2 = value2;
+    }
+}
+String value1 = "Hello wheel4j";
+String value2 = "Hello " + "wheel4j";
+if (Evaluations.equals(value1, value2)) { // result is true
+    // ...
+}
+```
